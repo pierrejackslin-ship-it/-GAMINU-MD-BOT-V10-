@@ -1,4 +1,4 @@
-🤖 GAMINU MINI BOT V10 | ⚡
+🤖 GAMINU MD BOT V10 | ⚡
 
 ⚡ **Premium WhatsApp Assistant**  
 📌 Always online (24/7)  
@@ -41,7 +41,7 @@
 ## 🚀 Installation
 
 ```bash
-git clone https://github.com/pierrejacksIin-ship-it/gaminu-mini-bot.git
-cd gaminu-mini-bot
+git clone https://github.com/pierrejacksIin-ship-it/gaminu-md-bot-V10.git
+cd gaminu-md-bot-V10
 npm install
 npm start
