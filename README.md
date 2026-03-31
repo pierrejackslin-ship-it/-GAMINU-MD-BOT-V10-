@@ -41,7 +41,7 @@
 ## 🚀 Installation
 
 ```bash
-git clone https://github.com/pierrejacksIin-ship-it/gaminu-md-bot-V10.git
+git clone https://github.com/pierrejackslin-ship-it/gaminu-md-bot-V10.git
 cd gaminu-md-bot-V10
 npm install
 npm start
