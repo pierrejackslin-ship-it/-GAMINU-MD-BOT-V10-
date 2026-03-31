@@ -1,26 +1,36 @@
-const { default: makeWASocket, useMultiFileAuthState } = require("@whiskeysockets/baileys");
-const qrcode = require("qrcode-terminal");
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
 
-async function startBot() {
-    const { state, saveCreds } = await useMultiFileAuthState("sessions");
+// kreye client la
+const client = new Client({
+    authStrategy: new LocalAuth()
+});
 
-    const sock = makeWASocket({
-        auth: state
-    });
+// lè gen QR
+client.on('qr', (qr) => {
+    console.log('Scan QR code la:');
+    qrcode.generate(qr, { small: true });
+});
 
-    sock.ev.on("connection.update", (update) => {
-        const { qr, connection } = update;
+// lè li pare
+client.on('ready', () => {
+    console.log('Bot la pare ✅');
+});
 
-        if (qr) {
-            qrcode.generate(qr, { small: true });
-        }
+// repons otomatik
+client.on('message', message => {
+    if (message.body === 'hi') {
+        message.reply('Hello 👋 mwen se bot ou!');
+    }
 
-        if (connection === "open") {
-            console.log("Bot konekte ✅");
-        }
-    });
+    if (message.body === 'menu') {
+        message.reply('📜 Menu:\n- hi\n- menu\n- ping');
+    }
 
-    sock.ev.on("creds.update", saveCreds);
-}
+    if (message.body === 'ping') {
+        message.reply('pong 🏓');
+    }
+});
 
-startBot();
+// lanse bot la
+client.initialize();
