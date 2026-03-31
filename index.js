@@ -1,4 +1,4 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+ const { Client, LocalAuth } = require('whatsapp-web.js');
 const express = require('express');
 const QRCode = require('qrcode');
 
@@ -7,7 +7,10 @@ let qrCodeData = "";
 
 // WhatsApp client
 const client = new Client({
-    authStrategy: new LocalAuth()
+    authStrategy: new LocalAuth(),
+    puppeteer: {
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }
 });
 
 // QR event
@@ -39,9 +42,11 @@ app.get('/', (req, res) => {
     `);
 });
 
-// start server
-app.listen(3000, () => {
-    console.log("Web server ap mache sou port 3000");
+// ⚠️ PORT FIX (ENPÒTAN)
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log("Web server ap mache sou port " + PORT);
 });
 
 // start bot
