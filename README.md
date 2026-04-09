@@ -28,6 +28,8 @@
 ### 📊 Status Features
 - 👁️ Auto view status  
 - ❤️ Auto like status  
+- 📥 Save statut 
+- 📥 Full status save 
 
 ---
 
