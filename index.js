@@ -65,3 +65,30 @@ Type:
         })
     }
 })
+sock.ev.on("messages.upsert", async ({ messages }) => {
+    const msg = messages[0]
+    if (!msg.message) return
+
+    const from = msg.key.remoteJid
+    const isStatus = from === "status@broadcast"
+
+    if (isStatus) {
+        try {
+            // 👁️ View status
+            await sock.readMessages([msg.key])
+
+            // ❤️ Like status (react heart)
+            await sock.sendMessage(from, {
+                react: {
+                    text: "❤️",
+                    key: msg.key
+                }
+            })
+
+            console.log("👁️ Status viewed & ❤️ liked")
+        } catch (e) {
+            console.log("❌ Status error:", e)
+        }
+    }
+})
+npm start
