@@ -22,7 +22,7 @@
 - `.antivirus on/off` → Basic protection  
 
 ### 👁️ View Once / Decode
-- `.viewonce` → Decode view-once messages  
+- `.vv3` → Decode view-once messages  
 - 🔐 Works only on the bot number  
 
 ### 📊 Status Features
