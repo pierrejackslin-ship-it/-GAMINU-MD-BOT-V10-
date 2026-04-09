@@ -1,53 +1,124 @@
- const { Client, LocalAuth } = require('whatsapp-web.js');
-const express = require('express');
-const QRCode = require('qrcode');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require("@whiskeysockets/baileys")
+const P = require("pino")
 
-const app = express();
-let qrCodeData = "";
+async function startBot() {
+    const { state, saveCreds } = await useMultiFileAuthState("session")
 
-// WhatsApp client
-const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    }
-});
+    const sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: true,
+        logger: P({ level: "silent" })
+    })
 
-// QR event
-client.on('qr', async (qr) => {
-    qrCodeData = await QRCode.toDataURL(qr);
-});
+    sock.ev.on("creds.update", saveCreds)
 
-// ready
-client.on('ready', () => {
-    console.log('Bot konekte ✅');
-});
+    sock.ev.on("connection.update", (update) => {
+        const { connection, lastDisconnect } = update
 
-// messages
-client.on('message', message => {
-    if (message.body === 'hi') {
-        message.reply('Hello 👋 mwen sou web!');
-    }
-});
+        if (connection === "close") {
+            const shouldReconnect =
+                lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut
 
-// route web
-app.get('/', (req, res) => {
-    if (!qrCodeData) {
-        return res.send("⏳ Ap tann QR code...");
-    }
+            if (shouldReconnect) {
+                startBot()
+            }
+        } else if (connection === "open") {
+            console.log("✅ Bot connected!")
+        }
+    })
 
-    res.send(`
-        <h1>Scan QR Code</h1>
-        <img src="${qrCodeData}" />
-    `);
-});
+    sock.ev.on("messages.upsert", async ({ messages }) => {
+        const msg = messages[0]
+        if (!msg.message) return
 
-// ⚠️ PORT FIX (ENPÒTAN)
-const PORT = process.env.PORT || 3000;
+        const from = msg.key.remoteJid
+        const body =
+            msg.message.conversation ||
+            msg.message.extendedTextMessage?.text ||
+            ""
 
-app.listen(PORT, () => {
-    console.log("Web server ap mache sou port " + PORT);
-});
+        const prefix = "."
+        if (!body.startsWith(prefix)) return
 
-// start bot
-client.initialize();
+        const command = body.slice(prefix.length).trim().split(" ")[0].toLowerCase()
+        const args = body.split(" ").slice(1)
+
+        // 📋 MENU
+        if (command === "menu") {
+            await sock.sendMessage(from, {
+                text: `
+🤖 GAMINU MD BOT V10
+
+🎧 .play
+🎵 .tiktok
+📝 .lyrics
+🌍 .trad
+🛡️ .antidelete
+🚷 .antispam
+🛡️ .antivirus
+👁️ .viewonce
+📊 Auto status
+                `
+            })
+        }
+
+        // 🎧 PLAY (placeholder)
+        if (command === "play") {
+            const query = args.join(" ")
+            await sock.sendMessage(from, { text: `🔎 Searching: ${query}` })
+        }
+
+        // 🌍 TRANSLATE (placeholder)
+        if (command === "trad") {
+            const lang = args[0]
+            const text = args.slice(1).join(" ")
+            await sock.sendMessage(from, {
+                text: `🌍 Translate to ${lang}: ${text}`
+            })
+        }
+
+        // 🎵 TIKTOK (placeholder)
+        if (command === "tiktok") {
+            const link = args[0]
+            await sock.sendMessage(from, {
+                text: `📥 Downloading TikTok: ${link}`
+            })
+        }
+
+        // 📝 LYRICS (placeholder)
+        if (command === "lyrics") {
+            const song = args.join(" ")
+            await sock.sendMessage(from, {
+                text: `🎶 Lyrics for: ${song}`
+            })
+        }
+
+        // 👁️ VIEWONCE (basic placeholder)
+        if (command === "viewonce") {
+            await sock.sendMessage(from, {
+                text: "👁️ ViewOnce decode feature (to implement)"
+            })
+        }
+
+        // 🛡️ TOGGLES (placeholders)
+        if (command === "antidelete") {
+            await sock.sendMessage(from, {
+                text: "🚫 Anti-delete toggled (logic to implement)"
+            })
+        }
+
+        if (command === "antispam") {
+            await sock.sendMessage(from, {
+                text: "🚷 Anti-spam toggled (logic to implement)"
+            })
+        }
+
+        if (command === "antivirus") {
+            await sock.sendMessage(from, {
+                text: "🛡️ Antivirus toggled (logic to implement)"
+            })
+        }
+    })
+}
+
+startBot()
